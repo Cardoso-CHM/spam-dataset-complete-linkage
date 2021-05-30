@@ -10,21 +10,27 @@ import pandas as pd
 def euc(obj_a, obj_b): 
     return np.linalg.norm(obj_a - obj_b)
 
+# função que remove a linha e coluna de maior indice
 def remove_column_line(matrix,index): 
     matrix = matrix.drop([index])
     matrix = matrix.drop(columns=[index])
     return matrix
 
+# função que pega o max de ((pi,pj), pk) e atualizar valor na tabela
 def calc_max(i, j): 
+    # percorre todos os indices do array, 0-length
     for k, obj_k in enumerate(data):
+        # o calculo so é feito nos pk que nao estao em (pi, pj)
         if(k != i and k != j):
-            #print(k, i)
+            # se i for maior que k, a ordem das coordenadas na tabela é dirente
             if(i > k) :
                 max_ik = distance_matrix[k][i]
+                # se j for maior que k, a ordem das coordenadas na tabela é dirente
                 if(j > k):
                     max_jk = distance_matrix[k][j]
                 else :
                     max_jk = distance_matrix[j][k]
+                # pegando o max da coordenada (pi, pk) e (pj, pk)
                 distance_matrix[k][i] = max(max_ik, max_jk) 
             else :
                 max_ik = distance_matrix[i][k]
@@ -73,3 +79,8 @@ else:
     distance_matrix = remove_column_line(distance_matrix, i)
     
 print(distance_matrix)
+
+
+
+
+
