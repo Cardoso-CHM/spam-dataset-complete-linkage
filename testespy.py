@@ -1,19 +1,14 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Sat May 29 13:59:52 2021
-
-@author: César Cardoso
-"""
 import numpy as np
-import pandas as pd
 
 def euc(obj_a, obj_b): 
     return np.linalg.norm(obj_a - obj_b)
 
 # função que remove a linha e coluna de maior indice
 def remove_column_line(matrix,index): 
-    matrix = matrix.drop([index])
-    matrix = matrix.drop(columns=[index])
+    # TO DO
+    # matrix = matrix.drop([index])
+    # matrix = matrix.drop(columns=[index])
     return matrix
 
 # função que pega o max de ((pi,pj), pk) e atualizar valor na tabela
@@ -48,25 +43,23 @@ data = np.array([
         [0.08, 0.41],
         [0.45, 0.30]]);
 
-dist = {}
-min_value = {'value': euc(data[0], data[1]) , 'i': -1, 'j': -1}
+rows, cols = data.shape
+distance_matrix = np.zeros([rows, rows])
+min_value = {'value': euc(data[0], data[1]) , 'i': 0, 'j': 1}
 
-for i, p1 in enumerate(data):
-    dist[i] = {}
-    for j, p2 in enumerate(data):
-        if(i < j):
+for row, p1 in enumerate(data):
+    for col, p2 in enumerate(data):
+        if(row > col):
             distance = euc(p1, p2)
-            dist[i][j] = distance
+            distance_matrix[row][col] = distance
 
             if(distance < min_value['value'] and distance > 0.0):
-                min_value = {'value': distance, 'i': i, 'j': j}
+                min_value = {'value': distance, 'i': row, 'j': col}
         else:
-            dist[i][j] = 0
-        
-distance_matrix = pd.DataFrame.from_dict(dist)
-
-print(distance_matrix)
-print(min_value)
+            distance_matrix[row][col] = 0
+            
+print(distance_matrix, "\n")
+print(min_value, "\n")
 
 i = min_value['i']
 j = min_value['j']
