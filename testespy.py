@@ -5,18 +5,16 @@ def euc(obj_a, obj_b):
     return np.linalg.norm(obj_a - obj_b)
 
 # função que remove a linha e coluna de maior indice
-def remove_column_line(matrix,index): 
+def remove_column_line(matrix,index):     
     matrix = np.delete(matrix, (index), axis=0)
     matrix = np.delete(matrix, (index), axis=1)
-    # TO DO
-    # matrix = matrix.drop([index])
-    # matrix = matrix.drop(columns=[index])
+    
     return matrix
 
 # função que pega o max de ((pi,pj), pk) e atualizar valor na tabela
 def calc_max(i, j):
     # percorre todos os indices do array, 0-length
-    for k, obj_k in enumerate(data):
+    for k, obj_k in enumerate(distance_matrix):
         # o calculo so é feito nos pk que nao estao em (pi, pj)
         if(k != i and k != j):
             # se i for maior que k, a ordem das coordenadas na tabela é dirente
@@ -49,6 +47,8 @@ data = np.array([
         [0.45, 0.30]]);
 
 rows, cols = data.shape
+
+groups = [[i] for i in range(rows)]
 distance_matrix = np.zeros([rows, rows])
 min_value = {'value': euc(data[0], data[1]) , 'i': 0, 'j': 1}
 
@@ -62,24 +62,28 @@ for row, p1 in enumerate(data):
                 min_value = {'value': distance, 'i': col, 'j': row}
         else:
             distance_matrix[row][col] = 0
-            
-print(distance_matrix, "\n")
-print(min_value, "\n")
 
-i = min_value['i']
-j = min_value['j']
-
-calc_max(i, j)
-
-        
-if(i < j):
-    distance_matrix = remove_column_line(distance_matrix, j)
-else:
-    distance_matrix = remove_column_line(distance_matrix, i)
+while len(groups) > 2:
+    i = min_value['i']
+    j = min_value['j']
     
-print(distance_matrix)
+    calc_max(i, j)        
+    
+    if(i < j):
+        distance_matrix = remove_column_line(distance_matrix, j)
+    else:
+        distance_matrix = remove_column_line(distance_matrix, i)
+    
+    filter_arr = (distance_matrix > 0)
+    aux = distance_matrix[filter_arr]
+    
+    minValue = np.amin(aux)
+    
+    min_value['value'] = minValue
+    aux2 = np.where(distance_matrix == minValue)
+    min_value['i'] = aux2[1][0]
+    min_value['j'] = aux2[0][0]
 
-
-
-
-
+    print(distance_matrix)
+    
+    
