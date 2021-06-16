@@ -68,10 +68,13 @@ while len(groups) > 2:
     j = min_value['j']
     
     calc_max(i, j)        
-    
     if(i < j):
+        groups[i].extend(groups[j])
+        groups.pop(int(j))
         distance_matrix = remove_column_line(distance_matrix, j)
     else:
+        groups[j].extend(groups[i])
+        groups.pop(int(i))
         distance_matrix = remove_column_line(distance_matrix, i)
     
     filter_arr = (distance_matrix > 0)
@@ -83,7 +86,9 @@ while len(groups) > 2:
     aux2 = np.where(distance_matrix == minValue)
     min_value['i'] = aux2[1][0]
     min_value['j'] = aux2[0][0]
-
+    
+    
+    
     print(distance_matrix)
     
     
