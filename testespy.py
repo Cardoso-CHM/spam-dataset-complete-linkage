@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 
-def euc(obj_a, obj_b): 
-    return np.linalg.norm(obj_a - obj_b)
+def distance_function(obj_a, obj_b): 
+    # return sum(abs(val1 - val2) for val1, val2 in zip(obj_a, obj_b)) # manhattan
+    return np.linalg.norm(obj_a - obj_b) # euclidean
 
 # função que remove a linha e coluna de maior indice
 def remove_column_line(matrix,index):     
@@ -11,84 +12,89 @@ def remove_column_line(matrix,index):
     
     return matrix
 
+def get_min_value_indexes(d_matrix):
+    filter_arr = (d_matrix > 0)
+    non_zero_values = d_matrix[filter_arr]
+    
+    min_value = np.amin(non_zero_values)
+    aux2 = np.where(d_matrix == min_value)
+    
+    return aux2[1][0], aux2[0][0]
+
 # função que pega o max de ((pi,pj), pk) e atualizar valor na tabela
-def calc_max(i, j):
+def update_distance_matrix(d_matrix, i, j):
     # percorre todos os indices do array, 0-length
-    for k, obj_k in enumerate(distance_matrix):
+    for k, obj_k in enumerate(d_matrix):
         # o calculo so é feito nos pk que nao estao em (pi, pj)
         if(k != i and k != j):
             # se i for maior que k, a ordem das coordenadas na tabela é dirente
             if(i > k) :
-                max_ik = distance_matrix[i][k]
+                max_ik = d_matrix[i][k]
                 # se j for maior que k, a ordem das coordenadas na tabela é dirente
                 if(j > k):
-                    max_jk = distance_matrix[j][k]
+                    max_jk = d_matrix[j][k]
                 else :
-                    max_jk = distance_matrix[k][j]
+                    max_jk = d_matrix[k][j]
                 # pegando o max da coordenada (pi, pk) e (pj, pk)
                 # print(max_ik, max_jk)
-                distance_matrix[i][k] = max(max_jk, max_ik) 
+                d_matrix[i][k] = max(max_jk, max_ik) 
             else :
-                max_ik = distance_matrix[k][i]
+                max_ik = d_matrix[k][i]
                 if(j > k):
-                    max_jk = distance_matrix[j][k]
+                    max_jk = d_matrix[j][k]
                 else :
-                    max_jk = distance_matrix[k][j]
+                    max_jk = d_matrix[k][j]
                     
                 # print(max_ik, max_jk)
-                distance_matrix[k][i] = max(max_jk, max_ik) 
+                d_matrix[k][i] = max(max_jk, max_ik) 
 
-data = np.array([
-        [0.40, 0.53],
-        [0.22, 0.38],
-        [0.35, 0.32],
-        [0.26, 0.19],
-        [0.08, 0.41],
-        [0.45, 0.30]]);
+def initialize_distance_matrix(database_dir):
+    dataset = np.array([
+        [0.40, 0.53, 1],
+        [0.22, 0.38, 1],
+        [0.35, 0.32, 0],
+        [0.26, 0.19, 0],
+        [0.08, 0.41, 1],
+        [0.45, 0.30, 0]]);
 
-rows, cols = data.shape
+    # separando as classes da matriz e colocando num vetor chamado "classes"
+    data, classes = dataset[:,:-1] , dataset[:, -1] 
+    
+    rows, cols = data.shape
+    
+    new_distance_matrix = np.zeros([rows, rows])
+    
+    for row, p1 in enumerate(data):
+        for col, p2 in enumerate(data):
+            if(row > col):
+                distance = distance_function(p1, p2)
+                new_distance_matrix[row][col] = distance
+                
+            else:
+                new_distance_matrix[row][col] = 0
+                
+    return new_distance_matrix, classes
 
-groups = [[i] for i in range(rows)]
-distance_matrix = np.zeros([rows, rows])
-min_value = {'value': euc(data[0], data[1]) , 'i': 0, 'j': 1}
-
-for row, p1 in enumerate(data):
-    for col, p2 in enumerate(data):
-        if(row > col):
-            distance = euc(p1, p2)
-            distance_matrix[row][col] = distance
-
-            if(distance < min_value['value'] and distance > 0.0):
-                min_value = {'value': distance, 'i': col, 'j': row}
+def main():
+    distance_matrix, classes = initialize_distance_matrix('spambase.csv')
+    groups = [[i] for i in range(len(distance_matrix))]
+    
+    while len(groups) > 2:
+        min_i, min_j = get_min_value_indexes(distance_matrix)
+        
+        update_distance_matrix(distance_matrix, min_i, min_j)    
+        
+        if(min_i < min_j):
+            groups[min_i].extend(groups[min_j])
+            groups.pop(int(min_j))
+            distance_matrix = remove_column_line(distance_matrix, min_j)
         else:
-            distance_matrix[row][col] = 0
-
-while len(groups) > 2:
-    i = min_value['i']
-    j = min_value['j']
-    
-    calc_max(i, j)        
-    if(i < j):
-        groups[i].extend(groups[j])
-        groups.pop(int(j))
-        distance_matrix = remove_column_line(distance_matrix, j)
-    else:
-        groups[j].extend(groups[i])
-        groups.pop(int(i))
-        distance_matrix = remove_column_line(distance_matrix, i)
-    
-    filter_arr = (distance_matrix > 0)
-    aux = distance_matrix[filter_arr]
-    
-    minValue = np.amin(aux)
-    
-    min_value['value'] = minValue
-    aux2 = np.where(distance_matrix == minValue)
-    min_value['i'] = aux2[1][0]
-    min_value['j'] = aux2[0][0]
-    
-    
-    
-    print(distance_matrix)
-    
-    
+            groups[min_j].extend(groups[min_i])
+            groups.pop(int(min_i))
+            distance_matrix = remove_column_line(distance_matrix, min_i)
+            
+    print(groups)
+        
+        
+if __name__ == "__main__":
+    main()
