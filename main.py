@@ -90,3 +90,6 @@ def main():
             distance_matrix = remove_column_line(distance_matrix, min_i)
             
     print(groups)
+    
+if __name__ == "__main__":
+    main()

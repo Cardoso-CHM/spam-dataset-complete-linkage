@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 
-def distance_function(obj_a, obj_b): 
-    # return sum(abs(val1 - val2) for val1, val2 in zip(obj_a, obj_b)) # manhattan
-    return np.linalg.norm(obj_a - obj_b) # euclidean
-
 # função que remove a linha e coluna de maior indice
 def remove_column_line(matrix,index):     
     matrix = np.delete(matrix, (index), axis=0)
     matrix = np.delete(matrix, (index), axis=1)
     
     return matrix
+
+def distance_function(obj_a, obj_b): 
+    # return sum(abs(val1 - val2) for val1, val2 in zip(obj_a, obj_b)) # manhattan
+    return np.linalg.norm(obj_a - obj_b) # euclidean
 
 def get_min_value_indexes(d_matrix):
     filter_arr = (d_matrix > 0)
@@ -46,55 +46,48 @@ def update_distance_matrix(d_matrix, i, j):
                     max_jk = d_matrix[k][j]
                     
                 # print(max_ik, max_jk)
-                d_matrix[k][i] = max(max_jk, max_ik) 
+                d_matrix[k][i] = max(max_jk, max_ik)
+    return d_matrix
 
-def initialize_distance_matrix(database_dir):
-    dataset = np.array([
-        [0.40, 0.53, 1],
-        [0.22, 0.38, 1],
-        [0.35, 0.32, 0],
-        [0.26, 0.19, 0],
-        [0.08, 0.41, 1],
-        [0.45, 0.30, 0]]);
 
-    # separando as classes da matriz e colocando num vetor chamado "classes"
-    data, classes = dataset[:,:-1] , dataset[:, -1] 
+data_set = np.loadtxt('spambase.csv', delimiter=',')
+data = data_set
+# data, classes = data_set[:,:-1] , data_set[:, -1] 
+
+rows, cols = data.shape
+
+distance_matrix = np.zeros([rows, rows])
     
-    rows, cols = data.shape
-    
-    new_distance_matrix = np.zeros([rows, rows])
-    
-    for row, p1 in enumerate(data):
-        for col, p2 in enumerate(data):
-            if(row > col):
-                distance = distance_function(p1, p2)
-                new_distance_matrix[row][col] = distance
+for row, p1 in enumerate(data):
+    for col, p2 in enumerate(data):
+        if(row > col):
+            distance = distance_function(p1, p2)
+            distance_matrix[row][col] = distance
                 
-            else:
-                new_distance_matrix[row][col] = 0
-                
-    return new_distance_matrix, classes
-
-def main():
-    distance_matrix, classes = initialize_distance_matrix('spambase.csv')
-    groups = [[i] for i in range(len(distance_matrix))]
-    
-    while len(groups) > 2:
-        min_i, min_j = get_min_value_indexes(distance_matrix)
-        
-        update_distance_matrix(distance_matrix, min_i, min_j)    
-        
-        if(min_i < min_j):
-            groups[min_i].extend(groups[min_j])
-            groups.pop(int(min_j))
-            distance_matrix = remove_column_line(distance_matrix, min_j)
         else:
-            groups[min_j].extend(groups[min_i])
-            groups.pop(int(min_i))
-            distance_matrix = remove_column_line(distance_matrix, min_i)
+            distance_matrix[row][col] = 0
             
-    print(groups)
-        
-        
-if __name__ == "__main__":
-    main()
+
+# groups = {str(i) : [i] for i in range(len(distance_matrix))}
+
+groups = [[i] for i in range(rows)]
+
+while len(groups) > 2:
+         min_i, min_j = get_min_value_indexes(distance_matrix)
+         
+         distance_matrix = update_distance_matrix(distance_matrix, min_i, min_j)    
+    
+         if(min_i < min_j):
+             # groups[str(min_i)].extend(groups[str(min_j)])
+             # groups.pop(str(min_j))
+             groups[min_i].extend(groups[min_j])
+             groups.pop(int(min_j))
+             distance_matrix = remove_column_line(distance_matrix, min_j)
+         else:
+             #groups[str(min_j)].extend(groups[str(min_i)])
+             #groups.pop(str(min_i))
+             groups[min_j].extend(groups[min_i])
+             groups.pop(int(min_i))
+             distance_matrix = remove_column_line(distance_matrix, min_i)
+               
+print(groups)
